@@ -12,7 +12,7 @@ mod versions;
 use config::Settings;
 use instances::Instance;
 use serde_json::Value;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, RunEvent, State};
 
 type R<T> = Result<T, String>;
 
@@ -124,7 +124,7 @@ fn main() {
     }));
     log_line("запуск");
     let _ = paths::ensure_all();
-    let res = tauri::Builder::default()
+    let built = tauri::Builder::default()
         .manage(launch::AppState::default())
         .setup(|_app| {
             log_line("setup выполнен, окно создаётся");
@@ -143,9 +143,22 @@ fn main() {
             open_instance_folder,
             log_js
         ])
-        .run(tauri::generate_context!());
-    match res {
-        Ok(()) => log_line("нормальное завершение"),
-        Err(err) => log_line(&format!("ОШИБКА запуска: {err}")),
+        .build(tauri::generate_context!());
+    match built {
+        Ok(app) => {
+            // Tauri при выходе вызывает process::exit, поэтому пишем в лог каждое важное событие цикла
+            app.run(|_handle, event| match event {
+                RunEvent::Ready => log_line("событие: Ready"),
+                RunEvent::ExitRequested { code, .. } => {
+                    log_line(&format!("событие: ExitRequested, code={code:?}"))
+                }
+                RunEvent::WindowEvent { label, event, .. } => {
+                    log_line(&format!("окно {label}: {event:?}"))
+                }
+                RunEvent::Exit => log_line("событие: Exit"),
+                _ => {}
+            });
+        }
+        Err(err) => log_line(&format!("ОШИБКА создания приложения: {err}")),
     }
 }

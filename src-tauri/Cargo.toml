@@ -3,6 +3,7 @@ name = "t1ralauncher"
 version = "0.1.0"
 edition = "2021"
 
+# Отдельный workspace: Cargo не будет искать посторонний Cargo.toml в корне репозитория
 [workspace]
 
 [build-dependencies]

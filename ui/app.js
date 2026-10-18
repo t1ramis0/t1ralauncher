@@ -3,6 +3,7 @@ const { listen } = window.__TAURI__.event;
 const $ = (s) => document.querySelector(s);
 
 // Любая ошибка интерфейса попадает в crash.log рядом с данными лаунчера
+invoke("log_js", { msg: "интерфейс загружен" }).catch(() => {});
 window.addEventListener("error", (e) => {
   invoke("log_js", { msg: `${e.message} (${e.filename}:${e.lineno})` }).catch(() => {});
 });
