@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>T1raLauncher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="logo">T1ra<b>Launcher</b></div>
+    <div id="list" class="list"></div>
+    <div class="side-actions">
+      <button id="btn-new" class="primary wide">Новая сборка</button>
+      <button id="btn-settings" class="ghost wide">Настройки</button>
+    </div>
+  </aside>
+
+  <main>
+    <div id="banner" class="banner hidden" role="alert"></div>
+
+    <div id="empty" class="empty">
+      <h2>Сборок пока нет</h2>
+      <p>Создай первую: выбери версию Minecraft и загрузчик, остальное лаунчер скачает сам.</p>
+      <button id="btn-new-2" class="primary">Создать сборку</button>
+    </div>
+
+    <section id="view" class="hidden">
+      <header>
+        <div>
+          <h1 id="v-name"></h1>
+          <p id="v-sub" class="muted"></p>
+        </div>
+        <div class="actions">
+          <button id="btn-launch" class="launch">Запустить</button>
+          <button id="btn-stop" class="danger hidden">Остановить</button>
+          <button id="btn-folder" class="ghost">Папка</button>
+          <button id="btn-delete" class="ghost">Удалить</button>
+        </div>
+      </header>
+      <div class="row">
+        <label for="v-ram">Память для этой сборки, МБ (пусто — берётся из настроек)</label>
+        <input id="v-ram" type="number" min="512" step="512" placeholder="по умолчанию">
+      </div>
+      <pre id="console" aria-label="Консоль игры"></pre>
+    </section>
+
+    <div id="progress" class="progress hidden">
+      <div class="track"><div id="bar"></div></div>
+      <span id="ptext"></span>
+    </div>
+  </main>
+</div>
+
+<dialog id="dlg-new">
+  <h2>Новая сборка</h2>
+  <label for="n-name">Название</label>
+  <input id="n-name" type="text" maxlength="40" placeholder="Например, Выживание">
+  <label for="n-version">Версия Minecraft</label>
+  <select id="n-version"></select>
+  <label class="check"><input id="n-snap" type="checkbox"> показывать снапшоты и старые версии</label>
+  <label for="n-loader">Загрузчик</label>
+  <select id="n-loader">
+    <option value="vanilla">Без модов (Vanilla)</option>
+    <option value="fabric">Fabric</option>
+    <option value="quilt">Quilt</option>
+  </select>
+  <div class="dlg-actions">
+    <button id="n-cancel" class="ghost">Отмена</button>
+    <button id="n-ok" class="primary">Создать и скачать</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-settings">
+  <h2>Настройки</h2>
+  <label for="s-name">Ник игрока (3–16 символов: буквы, цифры, _)</label>
+  <input id="s-name" type="text" maxlength="16">
+  <label for="s-ram">Память по умолчанию, МБ</label>
+  <input id="s-ram" type="number" min="512" step="512">
+  <label for="s-java">Путь к Java (пусто — искать в PATH)</label>
+  <input id="s-java" type="text" placeholder="C:\Program Files\Java\jdk-21\bin\java.exe">
+  <label for="s-args">Дополнительные аргументы JVM</label>
+  <textarea id="s-args" rows="3"></textarea>
+  <label class="check"><input id="s-mirror" type="checkbox"> сначала пробовать зеркало загрузок (если Mojang недоступен)</label>
+  <div class="dlg-actions">
+    <button id="s-cancel" class="ghost">Отмена</button>
+    <button id="s-ok" class="primary">Сохранить</button>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>

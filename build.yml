@@ -1,0 +1,48 @@
+name: Build T1raLauncher
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main, master]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Cache Tauri CLI
+        id: cli-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-tauri.exe
+          key: tauri-cli-2-windows
+
+      - name: Install Tauri CLI
+        if: steps.cli-cache.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "^2" --locked
+
+      - name: Check
+        working-directory: src-tauri
+        run: cargo check --locked || cargo check
+
+      - name: Build
+        working-directory: src-tauri
+        run: cargo tauri build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: T1raLauncher-windows
+          if-no-files-found: error
+          path: |
+            src-tauri/target/release/t1ralauncher.exe
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
