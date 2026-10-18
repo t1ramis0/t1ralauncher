@@ -2,6 +2,14 @@ const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
 const $ = (s) => document.querySelector(s);
 
+// Любая ошибка интерфейса попадает в crash.log рядом с данными лаунчера
+window.addEventListener("error", (e) => {
+  invoke("log_js", { msg: `${e.message} (${e.filename}:${e.lineno})` }).catch(() => {});
+});
+window.addEventListener("unhandledrejection", (e) => {
+  invoke("log_js", { msg: "unhandled: " + String(e.reason) }).catch(() => {});
+});
+
 const MAX_LOG = 3000;
 const state = {
   instances: [],

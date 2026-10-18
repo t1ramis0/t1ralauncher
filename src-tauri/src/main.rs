@@ -20,6 +20,28 @@ fn e(x: anyhow::Error) -> String {
     format!("{x:#}")
 }
 
+/// Пишет строку в <папка данных>/crash.log — чтобы при тихом вылете было видно причину.
+fn log_line(msg: &str) {
+    use std::io::Write;
+    let _ = std::fs::create_dir_all(paths::root());
+    let ts = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(paths::root().join("crash.log"))
+    {
+        let _ = writeln!(f, "[{ts}] {msg}");
+    }
+}
+
+#[tauri::command]
+fn log_js(msg: String) {
+    log_line(&format!("JS: {msg}"));
+}
+
 #[tauri::command]
 fn get_settings() -> Settings {
     config::load()
@@ -97,9 +119,17 @@ fn open_instance_folder(id: String) -> R<()> {
 }
 
 fn main() {
+    std::panic::set_hook(Box::new(|info| {
+        log_line(&format!("PANIC: {info}"));
+    }));
+    log_line("запуск");
     let _ = paths::ensure_all();
-    tauri::Builder::default()
+    let res = tauri::Builder::default()
         .manage(launch::AppState::default())
+        .setup(|_app| {
+            log_line("setup выполнен, окно создаётся");
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_settings,
             save_settings,
@@ -110,8 +140,12 @@ fn main() {
             set_instance_ram,
             launch_instance,
             stop_instance,
-            open_instance_folder
+            open_instance_folder,
+            log_js
         ])
-        .run(tauri::generate_context!())
-        .expect("ошибка запуска T1raLauncher");
+        .run(tauri::generate_context!());
+    match res {
+        Ok(()) => log_line("нормальное завершение"),
+        Err(err) => log_line(&format!("ОШИБКА запуска: {err}")),
+    }
 }
